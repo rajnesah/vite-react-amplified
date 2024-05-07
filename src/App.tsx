@@ -1,13 +1,12 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 // import './App.css'
-import { post } from 'aws-amplify/api';
+import { post, ApiError } from 'aws-amplify/api';
 import { withAuthenticator, Button, Heading } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { type AuthUser } from "aws-amplify/auth";
 import { type UseAuthenticator } from "@aws-amplify/ui-react-core";
-
 async function postTodo() {
     try {
         const restOperation = post({
@@ -25,8 +24,18 @@ async function postTodo() {
 
         console.log('POST call succeeded');
         console.log(response);
-    } catch (e) {
-        console.log('POST call failed: ', JSON.parse(e.response.body));
+    } catch (error) {
+        if (error instanceof ApiError) {
+            if (error.response) {
+                const {
+                    statusCode,
+                    // headers,
+                    body
+                } = error.response;
+                console.error(`Received ${statusCode} error response with payload: ${body}`);
+            }
+            // Handle API errors not caused by HTTP response.
+        }
     }
 }
 
@@ -38,7 +47,7 @@ type AppProps = {
 const App: React.FC<AppProps> = ({ signOut, user }) => {
   const [count, setCount] = useState(0)
   postTodo()
-    console.log('User', user)
+  console.log('User', user)
 
   return (
     <>
@@ -51,8 +60,12 @@ const App: React.FC<AppProps> = ({ signOut, user }) => {
         </a>
       </div>
       <h1>Vite + React</h1>
-      <Heading level={1}>Hello {user.signInDetails.loginId}</Heading>
-      <Button onClick={signOut}>Sign out</Button>
+        {user &&
+          <>
+            <Heading level={1}>Hello {user?.signInDetails?.loginId}</Heading>
+            <Button onClick={signOut}>Sign out</Button>
+          </>
+        }
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}

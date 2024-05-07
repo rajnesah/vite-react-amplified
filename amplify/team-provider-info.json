@@ -23,6 +23,12 @@
       },
       "auth": {
         "vitereactamplified71a91642": {}
+      },
+      "hosting": {
+        "amplifyhosting": {
+          "appId": "d278m4r65zf0je",
+          "type": "cicd"
+        }
       }
     }
   }
